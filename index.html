@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PDF Reader</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <h1>PDF Reader</h1>
+        <section class="hero"><h1>PDF Reader</h1>
+        <p>Want to run this locally with more free models? </p><p>Visit the <a href="https://github.com/childreth/PDFreader" target="_blank">Github repo</a> for instructions.</p>
+    </section>
         <input type="file" id="pdf-upload" accept="application/pdf">
         <div id="pdf-content" contenteditable="true" placeholder="Upload a PDF to see extracted text here. You can edit this text before converting to speech.">The rain falls like a soft, steady sigh, mirroring the quiet ache in my chest. It's a familiar feeling, this gentle sadness that settles in when the world feels a little too gray. I find myself replaying moments, wishing I could rewind and hold onto the warmth of yesterday. But even in the grayest skies, there's a promise of sunshine, a quiet knowing that things will shift.</div>
         <div class="tts-settings">
@@ -43,7 +48,7 @@
                 <label>API Key: <input type="password" id="elevenlabs-api-key" placeholder="Enter ElevenLabs API key">
                 
                 </label>
-                <p style="margin-bottom: 1rem;"><small>Need an API key? <a href="https://try.elevenlabs.io/lvh6muiveyp0">Get one here with  a free account.</a></small></p>
+                <p style="margin-bottom: 1rem;"><small>Need an <strong>ElevenLabs API key</strong>? <a href="https://try.elevenlabs.io/lvh6muiveyp0">Get one now with a free account.</a></small></p>
                 <label>Voice:</label>
                 <select id="elevenlabs-voice">
                     <option value="JBFqnCBsd6RMkjVDRZzb">Rachel</option>
