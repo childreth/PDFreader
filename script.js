@@ -1028,7 +1028,7 @@ function configureUIForEnvironment() {
         const ttsSettings = document.querySelector('.tts-settings');
         const infoDiv = document.createElement('div');
         infoDiv.className = 'deployment-info';
-        infoDiv.innerHTML = '<small>🏠 <strong>Local Development:</strong> AI TTS (SpeechT5, Kokoro) available with <code>npm start</code><br>☁️ <strong>Production:</strong> Browser TTS and ElevenLabs TTS available</small>';
+        infoDiv.innerHTML = '<small>🏠 <strong>Local Development:</strong> AI TTS (SpeechT5, Kokoro) available with <code>npm start</code>. Get the <a href="https://github.com/childreth/PDFreader" target="_blank">Github repo</a> for instructions.<br>☁️ <strong>Production:</strong> Browser TTS and ElevenLabs TTS available</small>';
         infoDiv.style.cssText = 'margin-top: 10px; padding: 8px; background: #e3f2fd; border-left: 3px solid #2196f3; border-radius: 4px;';
         ttsSettings.appendChild(infoDiv);
     }
