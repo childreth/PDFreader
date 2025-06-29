@@ -689,7 +689,7 @@ async function loadElevenLabsVoices() {
 
     try {
         console.log('Loading ElevenLabs voices...');
-        const response = await fetch(`${API_BASE}/tts/elevenlabs-voices`, {
+        const response = await fetch(`${API_BASE}/tts/elevenlabs/voices`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
