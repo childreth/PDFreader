@@ -142,7 +142,7 @@ class TTSManager {
         
         const apiKey = elevenlabsApiKey.value.trim();
         if (!apiKey) {
-            throw new Error('ElevenLabs API key is required');
+            throw new Error('ElevenLabs API key is required. See the link below to create an account for free.');
         }
 
         const voiceId = elevenlabsVoice.value;
