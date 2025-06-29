@@ -40,6 +40,9 @@ let isPlaying = false;
 let isPaused = false;
 let currentCharPosition = 0;
 
+// Environment detection for API endpoints
+const API_BASE = window.location.hostname === 'localhost' ? '/api' : '/.netlify/functions';
+
 // TTS Provider Management
 class TTSManager {
     constructor() {
@@ -147,7 +150,7 @@ class TTSManager {
         try {
             console.log('Sending request to backend...');
             // Use our backend proxy instead of direct API call
-            const response = await fetch('/api/tts/elevenlabs', {
+            const response = await fetch(`${API_BASE}/tts/elevenlabs`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -250,7 +253,7 @@ class TTSManager {
         
         try {
             console.log('Sending request to SpeechT5 backend...');
-            const response = await fetch('/api/tts/speecht5', {
+            const response = await fetch(`${API_BASE}/tts/speecht5`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -351,7 +354,7 @@ class TTSManager {
         
         try {
             console.log('Sending request to Kokoro backend...');
-            const response = await fetch('/api/tts/kokoro', {
+            const response = await fetch(`${API_BASE}/tts/kokoro`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -685,7 +688,7 @@ async function loadElevenLabsVoices() {
 
     try {
         console.log('Loading ElevenLabs voices...');
-        const response = await fetch('/api/tts/elevenlabs/voices', {
+        const response = await fetch(`${API_BASE}/tts/elevenlabs-voices`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

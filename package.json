@@ -6,6 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "netlify:dev": "netlify dev",
+    "build": "echo \"No build step required for static site\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
