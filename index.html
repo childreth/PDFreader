@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Reader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Reader</h1>
+        <input type="file" id="pdf-upload" accept="application/pdf">
+        <div id="pdf-content" contenteditable="true" placeholder="Upload a PDF to see extracted text here. You can edit this text before converting to speech."></div>
+        <div class="tts-settings">
+            <h3>Text-to-Speech Settings</h3>
+            <div class="tts-provider">
+                <label>TTS Provider:</label>
+                <select id="tts-provider">
+                    <option value="browser">Browser (Local)</option>
+                    <option value="elevenlabs">ElevenLabs (Cloud)</option>
+                    <option value="bark">Bark (Local AI)</option>
+                </select>
+            </div>
+            
+            <div class="voice-settings" id="browser-settings">
+                <label for="voice-select">Browser Voice:</label>
+                <div class="combobox-wrapper">
+                    <input type="text" id="voice-select" aria-autocomplete="list" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="voice-options">
+                    <button type="button" class="combobox-toggle" aria-label="Toggle voice options" tabindex="-1">
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <ul id="voice-options" class="combobox-options" role="listbox" hidden></ul>
+                </div>
+                <div class="voice-controls">
+                    <label>Rate: <input type="range" id="rate" min="0.5" max="2" value="1" step="0.1"></label>
+                    <label>Pitch: <input type="range" id="pitch" min="0" max="2" value="1" step="0.1"></label>
+                    <label>Volume: <input type="range" id="volume" min="0" max="1" value="1" step="0.1"></label>
+                </div>
+            </div>
+            
+            <div class="voice-settings" id="elevenlabs-settings" style="display: none;">
+                <label>API Key: <input type="password" id="elevenlabs-api-key" placeholder="Enter ElevenLabs API key"></label>
+                <label>Voice:</label>
+                <select id="elevenlabs-voice">
+                    <option value="JBFqnCBsd6RMkjVDRZzb">Rachel</option>
+                    <option value="TxGEqnCBsd6RMkjVDRZzb">Josh</option>
+                    <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
+                    <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
+                </select>
+            </div>
+            
+            <div class="voice-settings" id="bark-settings" style="display: none;">
+                <label>Voice Preset:</label>
+                <select id="bark-voice">
+                    <option value="v2/en_speaker_0">English Speaker 0</option>
+                    <option value="v2/en_speaker_1">English Speaker 1</option>
+                    <option value="v2/en_speaker_2">English Speaker 2</option>
+                    <option value="v2/en_speaker_3">English Speaker 3</option>
+                    <option value="v2/en_speaker_4">English Speaker 4</option>
+                    <option value="v2/en_speaker_5">English Speaker 5</option>
+                    <option value="v2/en_speaker_6">English Speaker 6</option>
+                    <option value="v2/en_speaker_7">English Speaker 7</option>
+                    <option value="v2/en_speaker_8">English Speaker 8</option>
+                    <option value="v2/en_speaker_9">English Speaker 9</option>
+                </select>
+                <div class="bark-info">
+                    <small>Bark runs locally using Transformers.js. First use may take time to download models.</small>
+                    <div id="bark-loading" class="bark-loading" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <span>Loading Bark model... This may take several minutes on first use.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="play-btn">▶ Play</button>
+            <button id="pause-btn">⏸ Pause</button>
+            <button id="stop-btn">⏹ Stop</button>
+            <button id="resume-btn" style="display: none;">▶ Resume</button>
+        </div>
+        
+        <div class="progress-info">
+            <div class="progress-bar">
+                <div id="progress-fill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="current-position">0</span> / <span id="total-length">0</span> characters
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
