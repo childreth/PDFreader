@@ -5,28 +5,4 @@
 [functions]
   node_bundler = "esbuild"
 
-[[redirects]]
-  from = "/api/tts/elevenlabs"
-  to = "/.netlify/functions/elevenlabs"
-  status = 200
-
-[[redirects]]
-  from = "/api/tts/elevenlabs/voices"
-  to = "/.netlify/functions/elevenlabs-voices"
-  status = 200
-
-[[redirects]]
-  from = "/api/tts/speecht5"
-  to = "/.netlify/functions/speecht5"
-  status = 200
-
-[[redirects]]
-  from = "/api/tts/kokoro"
-  to = "/.netlify/functions/kokoro"
-  status = 200
-
-[dev]
-  functions = "netlify/functions"
-  publish = "."
-  framework = "#static"
-  targetPort = 3000
+# No redirects needed - use direct function URLs
