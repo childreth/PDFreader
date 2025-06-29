@@ -1,141 +1,190 @@
-# PDF Reader with Text-to-Speech
+# PDF Reader with AI Text-to-Speech
 
-A web application that extracts text from PDF files and converts it to speech using both local browser TTS and ElevenLabs cloud TTS.
+A powerful web application that extracts text from PDF files and converts it to speech using multiple TTS providers including local AI models and cloud services.
 
-## Features
+## 🚀 Features
 
+### **PDF Processing**
 - **PDF Text Extraction**: Upload and extract text from PDF files
-- **Dual TTS Support**: 
-  - Local browser text-to-speech (offline)
-  - ElevenLabs cloud TTS (high-quality voices)
-- **Advanced Controls**: Play, pause, resume, stop, and progress tracking
-- **Voice Customization**: Adjust rate, pitch, volume for browser TTS
-- **Text Chunking**: Smart text processing for long documents
-- **Responsive Design**: Works on desktop and mobile devices
-- **Settings Persistence**: Auto-saves preferences
+- **Editable Text**: Edit extracted text before converting to speech
+- **Progress Tracking**: Visual progress bar and character counting
 
-## Setup Instructions
+### **Multiple TTS Providers**
+- 🗣️ **Browser TTS** (Local): Native browser text-to-speech with voice customization
+- 🤖 **SpeechT5** (Local AI): High-quality AI-generated speech using Microsoft's SpeechT5
+- 🎵 **Kokoro** (Local AI): Premium AI voices with multiple English speakers
+- ☁️ **ElevenLabs** (Cloud): Professional-grade cloud TTS with premium voices
 
-### Prerequisites
+### **Advanced Controls**
+- Play, pause, resume, stop functionality
+- Text chunking for long documents
+- Voice rate, pitch, and volume controls
+- Settings persistence across sessions
 
-- Node.js (v14 or higher)
-- npm
-- ElevenLabs API key (for cloud TTS features)
+## 📋 Prerequisites
 
-### Installation
+- **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+- **npm** (comes with Node.js)
+- **Git** (for cloning) - [Download here](https://git-scm.com/)
 
-1. **Clone/Download the project**
-   ```bash
-   cd PDFreader
-   ```
+## 🛠️ Local Development Setup
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### 1. **Clone the Repository**
+```bash
+git clone <your-repo-url>
+cd PDFreader
+```
 
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   Edit `.env` file and add your ElevenLabs API key:
-   ```
-   ELEVENLABS_API_KEY=your_api_key_here
-   PORT=3000
-   ```
+### 2. **Install Dependencies**
+```bash
+npm install
+```
 
-4. **Start the server**
-   ```bash
-   npm start
-   ```
+This will install all required packages including:
+- `@huggingface/transformers` - For SpeechT5 AI TTS
+- `kokoro-js` - For Kokoro AI TTS  
+- `@elevenlabs/elevenlabs-js` - For ElevenLabs cloud TTS
+- `express` - Web server
+- Other supporting libraries
 
-5. **Open in browser**
-   Navigate to `http://localhost:3000`
+### 3. **Optional: ElevenLabs Setup**
+For cloud TTS features, create a `.env` file:
+```bash
+cp .env.example .env
+```
 
-## Usage
+Edit `.env` and add your ElevenLabs API key:
+```env
+ELEVENLABS_API_KEY=your_api_key_here
+PORT=3000
+```
+> 💡 **Tip**: Get a free ElevenLabs API key at [elevenlabs.io](https://try.elevenlabs.io/lvh6muiveyp0)
 
-### Browser TTS (Local)
-1. Select "Browser (Local)" as TTS provider
-2. Choose a voice from your system's available voices
-3. Adjust rate, pitch, and volume as needed
-4. Upload a PDF and click Play
+### 4. **Start the Development Server**
+```bash
+npm start
+```
 
-### ElevenLabs TTS (Cloud)
-1. Select "ElevenLabs (Cloud)" as TTS provider
-2. Enter your ElevenLabs API key
-3. Choose from available voices (loads automatically)
-4. Upload a PDF and click Play
+### 5. **Open in Browser**
+Navigate to `http://localhost:3000`
 
-## API Endpoints
+## 🎯 How to Use
 
-The backend provides the following endpoints:
+### **Basic Usage**
+1. **Upload PDF**: Click "Choose File" and select a PDF
+2. **Select TTS Provider**: Choose from the dropdown menu
+3. **Configure Voice**: Adjust settings for your chosen provider
+4. **Play**: Click the play button to start text-to-speech
 
-- `GET /` - Serves the main application
-- `GET /api/health` - Health check
-- `POST /api/tts/elevenlabs` - Generate speech using ElevenLabs
-- `POST /api/tts/elevenlabs/stream` - Stream speech generation
-- `POST /api/tts/elevenlabs/voices` - Get available voices
+### **TTS Provider Guide**
 
-## Project Structure
+#### 🗣️ **Browser TTS (Always Available)**
+- **Setup**: No setup required
+- **Features**: System voices, rate/pitch/volume controls
+- **Best for**: Quick testing, no internet required
+
+#### 🤖 **SpeechT5 (Local AI)**
+- **Setup**: No additional setup needed
+- **Features**: High-quality AI speech, custom speaker embeddings
+- **First use**: Downloads ~200MB model (one-time)
+- **Best for**: High-quality offline speech
+
+#### 🎵 **Kokoro (Local AI)**
+- **Setup**: No additional setup needed
+- **Features**: Multiple English accents (American/British), quality settings
+- **First use**: Downloads ~200MB model (one-time)
+- **Voices**: Bella, Nicole, Sarah, Sky, Adam, Michael, Emma, Isabella, George, Lewis
+- **Best for**: Natural-sounding voices with accent variety
+
+#### ☁️ **ElevenLabs (Cloud)**
+- **Setup**: Requires API key
+- **Features**: Professional voice cloning, emotion control
+- **Best for**: Production use, highest quality
+
+## 🏗️ Project Structure
 
 ```
 PDFreader/
-├── index.html          # Frontend HTML
-├── style.css           # Styling
-├── script.js           # Frontend JavaScript
-├── server.js           # Backend Express server
-├── package.json        # Node.js dependencies
-├── .env.example        # Environment variables template
-└── README.md           # This file
+├── index.html              # Main application interface
+├── style.css               # Application styling
+├── script.js               # Frontend logic and TTS management
+├── server.js               # Express server with TTS endpoints
+├── package.json            # Node.js dependencies and scripts
+├── netlify/                # Netlify deployment functions
+│   └── functions/          
+├── netlify.toml            # Netlify configuration
+├── .env.example            # Environment variables template
+└── README.md               # This file
 ```
 
-## Dependencies
+## 🔧 Development Commands
 
-### Frontend
-- PDF.js - PDF text extraction
-- HTML5 Audio API - Audio playback
-- Web Speech API - Browser TTS
-
-### Backend
-- Express.js - Web server
-- @elevenlabs/elevenlabs-js - ElevenLabs SDK
-- cors - Cross-origin resource sharing
-- dotenv - Environment variable management
-
-## Security Notes
-
-- API keys are sent from frontend to backend (not stored server-side)
-- CORS is enabled for development
-- No persistent storage of sensitive data
-
-## Troubleshooting
-
-### PDF Not Loading
-- Check browser console for errors
-- Ensure PDF is not password protected
-- Try a different PDF file
-
-### ElevenLabs Not Working
-- Verify API key is correct
-- Check network connection
-- Monitor browser console for API errors
-- Ensure you have sufficient ElevenLabs credits
-
-### Server Issues
-- Verify Node.js version (v14+)
-- Check if port 3000 is available
-- Review server logs for errors
-
-## Development
-
-To run in development mode:
 ```bash
+# Start development server (full features)
+npm start
+
+# Alternative dev command
 npm run dev
+
+# Test Netlify functions locally (requires Netlify CLI)
+npm run netlify:dev
 ```
 
-The server will restart automatically when you make changes to server.js.
+## 🚨 Troubleshooting
 
-## License
+### **PDF Issues**
+- ❌ **PDF won't load**: Check if PDF is password-protected
+- ❌ **No text extracted**: PDF might contain only images
+- ✅ **Solution**: Try a different PDF or use OCR tools first
 
-ISC License
+### **AI TTS Issues**
+- ❌ **SpeechT5/Kokoro not working**: Model downloading on first use
+- ❌ **"Model loading" errors**: Wait 5-10 minutes for initial download
+- ✅ **Solution**: Check browser console for download progress
+
+### **ElevenLabs Issues**
+- ❌ **API key errors**: Verify key is correct and has credits
+- ❌ **Quota exceeded**: Check your ElevenLabs account limits
+- ✅ **Solution**: Get free credits at [elevenlabs.io](https://try.elevenlabs.io/lvh6muiveyp0)
+
+### **Server Issues**
+- ❌ **Port 3000 in use**: Change PORT in `.env` or stop other services
+- ❌ **Dependencies missing**: Run `npm install` again
+- ✅ **Solution**: Check terminal output for specific error messages
+
+## 🌐 Production Deployment
+
+This app is optimized for **local development** with full AI features. For production deployment:
+
+- ✅ **Netlify/Vercel**: Browser TTS + ElevenLabs TTS
+- ❌ **AI TTS**: Not available in serverless (model size limits)
+- 💡 **Recommendation**: Use local development for full features
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Test locally with `npm start`
+4. Submit a pull request
+
+## 📄 License
+
+ISC License - see LICENSE file for details
+
+---
+
+## 🎉 Quick Start Summary
+
+```bash
+# Clone and setup
+git clone <repo-url> && cd PDFreader
+npm install
+
+# Start developing
+npm start
+
+# Open browser
+open http://localhost:3000
+```
+
+**That's it!** You now have access to all TTS providers including AI models for high-quality speech generation. 🚀
