@@ -13,11 +13,17 @@ const voiceOptions = document.getElementById('voice-options');
 const comboboxToggle = document.querySelector('.combobox-toggle');
 const elevenlabsSettings = document.getElementById('elevenlabs-settings');
 const browserSettings = document.getElementById('browser-settings');
-const barkSettings = document.getElementById('bark-settings');
-const barkLoading = document.getElementById('bark-loading');
+const speecht5Settings = document.getElementById('speecht5-settings');
+const speecht5Loading = document.getElementById('speecht5-loading');
+const speecht5Speaker = document.getElementById('speecht5-speaker');
+const speecht5CustomUrl = document.getElementById('speecht5-custom-url');
+const speecht5EmbeddingUrl = document.getElementById('speecht5-embedding-url');
+const kokoroSettings = document.getElementById('kokoro-settings');
+const kokoroLoading = document.getElementById('kokoro-loading');
+const kokoroVoice = document.getElementById('kokoro-voice');
+const kokoroQuality = document.getElementById('kokoro-quality');
 const elevenlabsApiKey = document.getElementById('elevenlabs-api-key');
 const elevenlabsVoice = document.getElementById('elevenlabs-voice');
-const barkVoice = document.getElementById('bark-voice');
 const rateSlider = document.getElementById('rate');
 const pitchSlider = document.getElementById('pitch');
 const volumeSlider = document.getElementById('volume');
@@ -52,17 +58,25 @@ class TTSManager {
         if (provider === 'browser') {
             browserSettings.style.display = 'block';
             elevenlabsSettings.style.display = 'none';
-            barkSettings.style.display = 'none';
+            speecht5Settings.style.display = 'none';
+            kokoroSettings.style.display = 'none';
         } else if (provider === 'elevenlabs') {
             browserSettings.style.display = 'none';
             elevenlabsSettings.style.display = 'block';
-            barkSettings.style.display = 'none';
+            speecht5Settings.style.display = 'none';
+            kokoroSettings.style.display = 'none';
             // Load ElevenLabs voices when switching to that provider
             loadElevenLabsVoices();
-        } else if (provider === 'bark') {
+        } else if (provider === 'speecht5') {
             browserSettings.style.display = 'none';
             elevenlabsSettings.style.display = 'none';
-            barkSettings.style.display = 'block';
+            speecht5Settings.style.display = 'block';
+            kokoroSettings.style.display = 'none';
+        } else if (provider === 'kokoro') {
+            browserSettings.style.display = 'none';
+            elevenlabsSettings.style.display = 'none';
+            speecht5Settings.style.display = 'none';
+            kokoroSettings.style.display = 'block';
         }
     }
 
@@ -73,8 +87,10 @@ class TTSManager {
             return this.speakBrowser(text);
         } else if (this.currentProvider === 'elevenlabs') {
             return this.speakElevenLabs(text);
-        } else if (this.currentProvider === 'bark') {
-            return this.speakBark(text);
+        } else if (this.currentProvider === 'speecht5') {
+            return this.speakSpeechT5(text);
+        } else if (this.currentProvider === 'kokoro') {
+            return this.speakKokoro(text);
         }
     }
 
@@ -211,71 +227,81 @@ class TTSManager {
         }
     }
 
-    async speakBark(text) {
-        console.log('Bark TTS starting...', { textLength: text.length });
+    async speakSpeechT5(text) {
+        console.log('SpeechT5 TTS starting...', { textLength: text.length });
         
-        const voicePreset = barkVoice.value;
-        console.log('Using Bark voice preset:', voicePreset);
+        // Get speaker embedding setting
+        const speakerSetting = speecht5Speaker.value;
+        let speakerEmbedding = null;
+        
+        if (speakerSetting === 'custom') {
+            speakerEmbedding = speecht5EmbeddingUrl.value.trim();
+            if (!speakerEmbedding) {
+                throw new Error('Custom speaker embedding URL is required');
+            }
+        }
+        
+        console.log('Using SpeechT5 speaker setting:', speakerSetting);
         
         // Show loading indicator
-        if (barkLoading) {
-            barkLoading.style.display = 'flex';
+        if (speecht5Loading) {
+            speecht5Loading.style.display = 'flex';
         }
         
         try {
-            console.log('Sending request to Bark backend...');
-            const response = await fetch('/api/tts/bark', {
+            console.log('Sending request to SpeechT5 backend...');
+            const response = await fetch('/api/tts/speecht5', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     text: text,
-                    voicePreset: voicePreset
+                    speakerEmbedding: speakerEmbedding
                 })
             });
 
-            console.log('Bark backend response status:', response.status);
+            console.log('SpeechT5 backend response status:', response.status);
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                console.error('Bark backend error:', errorData);
+                console.error('SpeechT5 backend error:', errorData);
                 
                 if (response.status === 503 && errorData.error && errorData.error.includes('downloading')) {
-                    throw new Error('Bark model is downloading for first-time use. This may take 5-10 minutes depending on your internet connection. Please try again in a few minutes.');
+                    throw new Error('SpeechT5 model is downloading for first-time use. This may take 5-10 minutes depending on your internet connection. Please try again in a few minutes.');
                 } else if (response.status === 503 && errorData.error && errorData.error.includes('loading')) {
-                    throw new Error('Bark model is loading. Please wait a moment and try again.');
+                    throw new Error('SpeechT5 model is loading. Please wait a moment and try again.');
                 } else {
                     throw new Error(errorData.error || `Server error: ${response.status}`);
                 }
             }
 
-            console.log('Getting Bark audio blob...');
+            console.log('Getting SpeechT5 audio blob...');
             const audioBlob = await response.blob();
-            console.log('Bark audio blob size:', audioBlob.size, 'type:', audioBlob.type);
+            console.log('SpeechT5 audio blob size:', audioBlob.size, 'type:', audioBlob.type);
             
             const audioUrl = URL.createObjectURL(audioBlob);
-            console.log('Created Bark audio URL:', audioUrl);
+            console.log('Created SpeechT5 audio URL:', audioUrl);
             
             currentAudio = new Audio(audioUrl);
             
             return new Promise((resolve, reject) => {
                 currentAudio.onloadstart = () => {
-                    console.log('Bark audio loading started');
+                    console.log('SpeechT5 audio loading started');
                 };
 
                 currentAudio.oncanplay = () => {
-                    console.log('Bark audio can play');
+                    console.log('SpeechT5 audio can play');
                 };
 
                 currentAudio.onplay = () => {
-                    console.log('Bark audio playback started');
+                    console.log('SpeechT5 audio playback started');
                     isPlaying = true;
                     this.updatePlayButtons();
                 };
 
                 currentAudio.onended = () => {
-                    console.log('Bark audio playback ended');
+                    console.log('SpeechT5 audio playback ended');
                     isPlaying = false;
                     isPaused = false;
                     this.updatePlayButtons();
@@ -284,28 +310,130 @@ class TTSManager {
                 };
 
                 currentAudio.onerror = (event) => {
-                    console.error('Bark audio playback error:', event);
+                    console.error('SpeechT5 audio playback error:', event);
                     isPlaying = false;
                     isPaused = false;
                     this.updatePlayButtons();
                     URL.revokeObjectURL(audioUrl);
-                    reject(new Error('Bark audio playback error'));
+                    reject(new Error('SpeechT5 audio playback error'));
                 };
 
-                console.log('Starting Bark audio playback...');
+                console.log('Starting SpeechT5 audio playback...');
                 currentAudio.play().catch(error => {
-                    console.error('Bark play promise rejected:', error);
+                    console.error('SpeechT5 play promise rejected:', error);
                     reject(error);
                 });
             });
 
         } catch (error) {
-            console.error('Bark TTS error:', error);
-            throw new Error(`Bark request failed: ${error.message}`);
+            console.error('SpeechT5 TTS error:', error);
+            throw new Error(`SpeechT5 request failed: ${error.message}`);
         } finally {
             // Hide loading indicator
-            if (barkLoading) {
-                barkLoading.style.display = 'none';
+            if (speecht5Loading) {
+                speecht5Loading.style.display = 'none';
+            }
+        }
+    }
+
+    async speakKokoro(text) {
+        console.log('Kokoro TTS starting...', { textLength: text.length });
+        
+        const voice = kokoroVoice.value;
+        const quality = kokoroQuality.value;
+        
+        console.log('Using Kokoro voice:', voice, 'quality:', quality);
+        
+        // Show loading indicator
+        if (kokoroLoading) {
+            kokoroLoading.style.display = 'flex';
+        }
+        
+        try {
+            console.log('Sending request to Kokoro backend...');
+            const response = await fetch('/api/tts/kokoro', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: text,
+                    voice: voice,
+                    quality: quality
+                })
+            });
+
+            console.log('Kokoro backend response status:', response.status);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                console.error('Kokoro backend error:', errorData);
+                
+                if (response.status === 503 && errorData.error && errorData.error.includes('downloading')) {
+                    throw new Error('Kokoro model is downloading for first-time use. This may take 5-10 minutes depending on your internet connection. Please try again in a few minutes.');
+                } else if (response.status === 503 && errorData.error && errorData.error.includes('loading')) {
+                    throw new Error('Kokoro model is loading. Please wait a moment and try again.');
+                } else {
+                    throw new Error(errorData.error || `Server error: ${response.status}`);
+                }
+            }
+
+            console.log('Getting Kokoro audio blob...');
+            const audioBlob = await response.blob();
+            console.log('Kokoro audio blob size:', audioBlob.size, 'type:', audioBlob.type);
+            
+            const audioUrl = URL.createObjectURL(audioBlob);
+            console.log('Created Kokoro audio URL:', audioUrl);
+            
+            currentAudio = new Audio(audioUrl);
+            
+            return new Promise((resolve, reject) => {
+                currentAudio.onloadstart = () => {
+                    console.log('Kokoro audio loading started');
+                };
+
+                currentAudio.oncanplay = () => {
+                    console.log('Kokoro audio can play');
+                };
+
+                currentAudio.onplay = () => {
+                    console.log('Kokoro audio playback started');
+                    isPlaying = true;
+                    this.updatePlayButtons();
+                };
+
+                currentAudio.onended = () => {
+                    console.log('Kokoro audio playback ended');
+                    isPlaying = false;
+                    isPaused = false;
+                    this.updatePlayButtons();
+                    URL.revokeObjectURL(audioUrl);
+                    resolve();
+                };
+
+                currentAudio.onerror = (event) => {
+                    console.error('Kokoro audio playback error:', event);
+                    isPlaying = false;
+                    isPaused = false;
+                    this.updatePlayButtons();
+                    URL.revokeObjectURL(audioUrl);
+                    reject(new Error('Kokoro audio playback error'));
+                };
+
+                console.log('Starting Kokoro audio playback...');
+                currentAudio.play().catch(error => {
+                    console.error('Kokoro play promise rejected:', error);
+                    reject(error);
+                });
+            });
+
+        } catch (error) {
+            console.error('Kokoro TTS error:', error);
+            throw new Error(`Kokoro request failed: ${error.message}`);
+        } finally {
+            // Hide loading indicator
+            if (kokoroLoading) {
+                kokoroLoading.style.display = 'none';
             }
         }
     }
@@ -599,6 +727,15 @@ async function loadElevenLabsVoices() {
 // Load ElevenLabs voices when API key changes
 elevenlabsApiKey.addEventListener('blur', loadElevenLabsVoices);
 
+// Handle SpeechT5 speaker selection change
+speecht5Speaker.addEventListener('change', (e) => {
+    if (e.target.value === 'custom') {
+        speecht5CustomUrl.style.display = 'block';
+    } else {
+        speecht5CustomUrl.style.display = 'none';
+    }
+});
+
 populateVoiceList();
 if (speechSynthesis.onvoiceschanged !== undefined) {
     speechSynthesis.onvoiceschanged = populateVoiceList;
@@ -769,7 +906,7 @@ playBtn.addEventListener('click', async () => {
     }
 
     try {
-        if (ttsManager.currentProvider === 'elevenlabs' || ttsManager.currentProvider === 'bark') {
+        if (ttsManager.currentProvider === 'elevenlabs' || ttsManager.currentProvider === 'speecht5' || ttsManager.currentProvider === 'kokoro') {
             console.log('Using', ttsManager.currentProvider, 'with chunking');
             await playTextInChunks(currentText);
         } else {
@@ -801,7 +938,10 @@ function saveSettings() {
         provider: ttsProvider.value,
         apiKey: elevenlabsApiKey.value,
         voice: elevenlabsVoice.value,
-        barkVoice: barkVoice.value,
+        speecht5Speaker: speecht5Speaker.value,
+        speecht5EmbeddingUrl: speecht5EmbeddingUrl.value,
+        kokoroVoice: kokoroVoice.value,
+        kokoroQuality: kokoroQuality.value,
         rate: rateSlider.value,
         pitch: pitchSlider.value,
         volume: volumeSlider.value
@@ -816,7 +956,10 @@ function loadSettings() {
         ttsProvider.value = settings.provider || 'browser';
         elevenlabsApiKey.value = settings.apiKey || '';
         elevenlabsVoice.value = settings.voice || 'JBFqnCBsd6RMkjVDRZzb';
-        barkVoice.value = settings.barkVoice || 'v2/en_speaker_0';
+        speecht5Speaker.value = settings.speecht5Speaker || 'default';
+        speecht5EmbeddingUrl.value = settings.speecht5EmbeddingUrl || '';
+        kokoroVoice.value = settings.kokoroVoice || 'af_bella';
+        kokoroQuality.value = settings.kokoroQuality || 'q8';
         rateSlider.value = settings.rate || 1;
         pitchSlider.value = settings.pitch || 1;
         volumeSlider.value = settings.volume || 1;
@@ -826,7 +969,7 @@ function loadSettings() {
 }
 
 // Save settings on change
-[ttsProvider, elevenlabsApiKey, elevenlabsVoice, barkVoice, rateSlider, pitchSlider, volumeSlider].forEach(element => {
+[ttsProvider, elevenlabsApiKey, elevenlabsVoice, speecht5Speaker, speecht5EmbeddingUrl, kokoroVoice, kokoroQuality, rateSlider, pitchSlider, volumeSlider].forEach(element => {
     element.addEventListener('change', saveSettings);
 });
 

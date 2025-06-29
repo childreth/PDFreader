@@ -169,46 +169,44 @@ app.post('/api/tts/elevenlabs/stream', async (req, res) => {
     }
 });
 
-// Bark TTS endpoint
-app.post('/api/tts/bark', async (req, res) => {
+// SpeechT5 TTS endpoint (replaces Bark as it's not supported in Transformers.js yet)
+app.post('/api/tts/speecht5', async (req, res) => {
     try {
-        const { text, voicePreset } = req.body;
+        const { text, speakerEmbedding } = req.body;
 
         if (!text) {
             return res.status(400).json({ error: 'Text is required' });
         }
 
-        if (!voicePreset) {
-            return res.status(400).json({ error: 'Voice preset is required' });
-        }
-
-        console.log(`Processing Bark TTS request: ${text.length} characters, voice: ${voicePreset}`);
+        console.log(`Processing SpeechT5 TTS request: ${text.length} characters`);
 
         // Import transformers dynamically
         const { pipeline } = await import('@huggingface/transformers');
 
-        // Initialize the text-to-speech pipeline for Bark
-        const synthesizer = await pipeline('text-to-speech', 'suno/bark-small');
+        // Initialize the text-to-speech pipeline for SpeechT5
+        const synthesizer = await pipeline('text-to-speech', 'Xenova/speecht5_tts', {
+            quantized: false,
+        });
 
-        console.log('Generating speech with Bark...');
+        console.log('Generating speech with SpeechT5...');
         
-        // Generate speech - Bark uses voice presets via forward_params
+        // Use default speaker embeddings if not provided
+        const defaultSpeakerEmbeddings = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/speaker_embeddings.bin';
+        
+        // Generate speech
         const result = await synthesizer(text, {
-            forward_params: {
-                do_sample: true,
-                history_prompt: voicePreset,
-            }
+            speaker_embeddings: speakerEmbedding || defaultSpeakerEmbeddings,
         });
         
         if (!result || !result.audio) {
-            throw new Error('Bark failed to generate audio output');
+            throw new Error('SpeechT5 failed to generate audio output');
         }
 
-        console.log('Bark synthesis complete, converting to audio buffer');
+        console.log('SpeechT5 synthesis complete, converting to audio buffer');
 
         // Convert Float32Array to WAV buffer 
-        // Bark typically outputs at 24kHz sampling rate
-        const samplingRate = result.sampling_rate || 24000;
+        // SpeechT5 typically outputs at 16kHz sampling rate
+        const samplingRate = result.sampling_rate || 16000;
         const audioBuffer = float32ArrayToWav(result.audio, samplingRate);
 
         // Set appropriate headers for WAV audio response
@@ -216,13 +214,13 @@ app.post('/api/tts/bark', async (req, res) => {
         res.setHeader('Content-Disposition', 'inline; filename="speech.wav"');
         res.setHeader('Content-Length', audioBuffer.length.toString());
 
-        console.log('Sending Bark audio buffer to client, size:', audioBuffer.length);
+        console.log('Sending SpeechT5 audio buffer to client, size:', audioBuffer.length);
 
         // Send the audio buffer
         res.send(audioBuffer);
 
     } catch (error) {
-        console.error('Bark TTS Error:', error);
+        console.error('SpeechT5 TTS Error:', error);
         
         if (error.message.includes('fetch') && error.message.includes('model')) {
             res.status(503).json({ error: 'Model downloading or loading, please try again' });
@@ -232,7 +230,7 @@ app.post('/api/tts/bark', async (req, res) => {
             res.status(503).json({ error: 'Model loading, please try again' });
         } else {
             res.status(500).json({ 
-                error: 'Bark TTS generation failed', 
+                error: 'SpeechT5 TTS generation failed', 
                 details: error.message 
             });
         }
@@ -240,7 +238,7 @@ app.post('/api/tts/bark', async (req, res) => {
 });
 
 // Helper function to convert Float32Array to WAV buffer
-function float32ArrayToWav(float32Array, sampleRate = 24000) {
+function float32ArrayToWav(float32Array, sampleRate = 16000) {
     const buffer = new ArrayBuffer(44 + float32Array.length * 2);
     const view = new DataView(buffer);
     
@@ -275,6 +273,79 @@ function float32ArrayToWav(float32Array, sampleRate = 24000) {
     
     return Buffer.from(buffer);
 }
+
+// Kokoro TTS endpoint
+app.post('/api/tts/kokoro', async (req, res) => {
+    try {
+        const { text, voice, quality } = req.body;
+
+        if (!text) {
+            return res.status(400).json({ error: 'Text is required' });
+        }
+
+        if (!voice) {
+            return res.status(400).json({ error: 'Voice is required' });
+        }
+
+        console.log(`Processing Kokoro TTS request: ${text.length} characters, voice: ${voice}, quality: ${quality}`);
+
+        // Import kokoro-js dynamically
+        const { KokoroTTS } = await import('kokoro-js');
+
+        console.log('Initializing Kokoro TTS model...');
+        
+        // Initialize Kokoro with the specified quality/quantization
+        const tts = await KokoroTTS.from_pretrained('onnx-community/Kokoro-82M-ONNX', {
+            dtype: quality || 'q8',
+        });
+
+        console.log('Generating speech with Kokoro...');
+        
+        // Generate speech
+        const audio = await tts.generate(text, {
+            voice: voice,
+        });
+        
+        if (!audio || !audio.audio) {
+            throw new Error('Kokoro failed to generate audio output');
+        }
+
+        console.log('Kokoro synthesis complete, converting to audio buffer');
+
+        // Get the audio data
+        const audioData = audio.audio;
+        const samplingRate = audio.sampling_rate || 22050; // Kokoro default sampling rate
+        
+        // Convert to WAV buffer
+        const audioBuffer = float32ArrayToWav(audioData, samplingRate);
+
+        // Set appropriate headers for WAV audio response
+        res.setHeader('Content-Type', 'audio/wav');
+        res.setHeader('Content-Disposition', 'inline; filename="speech.wav"');
+        res.setHeader('Content-Length', audioBuffer.length.toString());
+
+        console.log('Sending Kokoro audio buffer to client, size:', audioBuffer.length);
+
+        // Send the audio buffer
+        res.send(audioBuffer);
+
+    } catch (error) {
+        console.error('Kokoro TTS Error:', error);
+        
+        if (error.message.includes('fetch') && error.message.includes('model')) {
+            res.status(503).json({ error: 'Model downloading or loading, please try again' });
+        } else if (error.message.includes('download') || error.message.includes('loading')) {
+            res.status(503).json({ error: 'Model downloading or loading, please try again' });
+        } else if (error.message.includes('from_pretrained')) {
+            res.status(503).json({ error: 'Model loading, please try again' });
+        } else {
+            res.status(500).json({ 
+                error: 'Kokoro TTS generation failed', 
+                details: error.message 
+            });
+        }
+    }
+});
 
 // Get available voices endpoint
 app.post('/api/tts/elevenlabs/voices', async (req, res) => {
