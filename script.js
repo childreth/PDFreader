@@ -42,6 +42,7 @@ let currentCharPosition = 0;
 
 // Environment detection for API endpoints
 const API_BASE = window.location.hostname === 'localhost' ? '/api' : '/.netlify/functions';
+const IS_LOCAL = window.location.hostname === 'localhost';
 
 // TTS Provider Management
 class TTSManager {
@@ -992,5 +993,32 @@ pdfContent.addEventListener('blur', () => {
     console.log('Content editing finished');
 });
 
+// Hide AI TTS options if not running locally (due to Netlify function size limits)
+function configureUIForEnvironment() {
+    if (!IS_LOCAL) {
+        // Hide AI TTS options in production
+        const speecht5Option = document.querySelector('option[value="speecht5"]');
+        const kokoroOption = document.querySelector('option[value="kokoro"]');
+        
+        if (speecht5Option) {
+            speecht5Option.style.display = 'none';
+            speecht5Option.disabled = true;
+        }
+        if (kokoroOption) {
+            kokoroOption.style.display = 'none';
+            kokoroOption.disabled = true;
+        }
+        
+        // Add info message
+        const ttsSettings = document.querySelector('.tts-settings');
+        const infoDiv = document.createElement('div');
+        infoDiv.className = 'deployment-info';
+        infoDiv.innerHTML = '<small>🏠 <strong>Local Development:</strong> AI TTS (SpeechT5, Kokoro) available with <code>npm start</code><br>☁️ <strong>Production:</strong> Browser TTS and ElevenLabs TTS available</small>';
+        infoDiv.style.cssText = 'margin-top: 10px; padding: 8px; background: #e3f2fd; border-left: 3px solid #2196f3; border-radius: 4px;';
+        ttsSettings.appendChild(infoDiv);
+    }
+}
+
 // Load settings on page load
 loadSettings();
+configureUIForEnvironment();
